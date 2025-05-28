@@ -17,12 +17,17 @@ const clerkWebhooks = async (req, res) => {
     const evt = await whook.verify(JSON.stringify(req.body), headers);
     const { data, type } = evt;
 
+    console.log("🔥 Webhook type:", type);
+    console.log("🔥 Raw data from Clerk:", JSON.stringify(data, null, 2));
+
     const userData = {
       _id: data.id,
-      email: data.email_addresses?.[0]?.email_address || "unknown@email.com",
+      email: data.email_addresses?.[0]?.email_address || "",
       username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
       image: data.image_url || "",
     };
+
+    console.log("🔥 Final userData to be saved:", userData);
 
     switch (type) {
       case "user.created":
@@ -34,14 +39,11 @@ const clerkWebhooks = async (req, res) => {
       case "user.deleted":
         await User.findByIdAndDelete(data.id);
         break;
-      default:
-        break;
     }
 
-    console.log("✅ User saved:", userData);
     res.json({ success: true, message: "Webhook received" });
   } catch (error) {
-    console.error("❌ Webhook error:", error.message);
+    console.error("❌ Webhook Error:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };
