@@ -1,12 +1,12 @@
-import connectDB from "../configs/db.js";
-import User from "../models/User.js";
 import { Webhook } from "svix";
+import User from "../models/User.js";
+import connectDB from "../configs/db.js";
 
 const clerkWebhooks = async (req, res) => {
   try {
     await connectDB();
 
-    const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
     const headers = {
       "svix-id": req.headers["svix-id"],
@@ -14,11 +14,10 @@ const clerkWebhooks = async (req, res) => {
       "svix-signature": req.headers["svix-signature"],
     };
 
-    const evt = await whook.verify(JSON.stringify(req.body), headers);
-    const { data, type } = evt;
+    const payload = req.body.toString("utf8"); // because we're using raw body parser
+    const evt = wh.verify(payload, headers);
 
-    console.log("🔥 Webhook type:", type);
-    console.log("🔥 Raw data from Clerk:", JSON.stringify(data, null, 2));
+    const { data, type } = evt;
 
     const userData = {
       _id: data.id,
@@ -26,8 +25,6 @@ const clerkWebhooks = async (req, res) => {
       username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
       image: data.image_url || "",
     };
-
-    console.log("🔥 Final userData to be saved:", userData);
 
     switch (type) {
       case "user.created":
@@ -41,10 +38,10 @@ const clerkWebhooks = async (req, res) => {
         break;
     }
 
-    res.json({ success: true, message: "Webhook received" });
+    res.status(200).json({ success: true });
   } catch (error) {
-    console.error("❌ Webhook Error:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Clerk Webhook Error:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
