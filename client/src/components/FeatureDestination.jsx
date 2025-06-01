@@ -3,12 +3,13 @@ import { roomsDummyData } from '../assets/assets'
 import HotelCard from './HotelCard'
 import Title from './Title'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { useAppContext } from '../context/AppContext'
 
 const FeatureDestination = () => {
 
-    const navigate = useNavigate();
+    const { rooms, navigate } = useAppContext();
 
-    return (
+    return rooms.length > 0 &&  (
         <div className="py-10 px-4 sm:px-8 lg:px-16 bg-gray-50">
             {/* Header */}
             <div className="text-center mb-10">
@@ -24,7 +25,7 @@ const FeatureDestination = () => {
 
             {/* Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {roomsDummyData.slice(0, 4).map((room, index) => (
+                {rooms.slice(0, 4).map((room, index) => (
                     <HotelCard key={room._id} room={room} index={index} />
                 ))}
             </div>

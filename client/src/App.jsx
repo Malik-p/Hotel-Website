@@ -11,7 +11,7 @@ import Layout from './pages/hotelOwner/Layout'
 import Dashboard from './pages/hotelOwner/Dashboard'
 import AddRoom from './pages/hotelOwner/AddRoom'
 import ListRoom from './pages/hotelOwner/ListRoom'
-import { Toaster } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'; // ✅ correct
 import { useAppContext } from './context/AppContext'
 
 const App = () => {

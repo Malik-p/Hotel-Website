@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
 import Title from '../../components/Title'
 import { assets } from '../../assets/assets'
+import { useAppContext } from '../../context/AppContext'
+import toast from 'react-hot-toast'
 
 const AddRoom = () => {
+
+  const { axios, getToken } = useAppContext();
 
   const [images, setImages] = useState({
     1: null,
@@ -23,10 +27,59 @@ const AddRoom = () => {
     }
   })
 
+  const [loading, setLoading] = useState(false);
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+
+    if (!inputs.roomType || !inputs.pricePerNight || !inputs.amenities || !Object.values(images).some(image => image)) {
+      toast.error("Please fill all the details");
+      return;
+    }
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('roomType', inputs.roomType);
+      formData.append('pricePerNight', inputs.pricePerNight);
+      const amenities = Object.keys(inputs.amenities).filter(key => inputs.amenities[key])
+      formData.append('amenities', JSON.stringify(amenities))
+
+      Object.keys(images).forEach((key) => {
+        images[key] && formData.append('images', images[key])
+      })
+
+      const { data } = await axios.post('/api/rooms', formData, { headers: { Authorization: `Bearer ${await getToken()}` } })
+
+      if (data.success) {
+        toast.success(data.message)
+        setInputs({
+          roomType: '',
+          pricePerNight: 0,
+          amenities: {
+            'Free Wifi': 'false',
+            'Free Breakfast': 'false',
+            'Free Service': 'false',
+            'Pool Access': 'false',
+            'Mountain View': 'false',
+          }
+        })
+        setImages({ 1: null, 2: null, 3: null, 4: null })
+      } else {
+        toast.error(data.message)
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
 
     <section className="bg-gray-50 pt-8 px-4 pb-32">
-      <form className="bg-white p-4 rounded-lg shadow-md max-w-3xl mx-auto max-h-[calc(100vh-6rem)] overflow-y-auto space-y-4">
+      <form onSubmit={onSubmitHandler} className="bg-white p-4 rounded-lg shadow-md max-w-3xl mx-auto max-h-[calc(100vh-6rem)] overflow-y-auto space-y-4">
         <Title
           align="left"
           font="outfit"
@@ -126,9 +179,9 @@ const AddRoom = () => {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition"
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition " disabled={loading}
           >
-            Add Room
+            {loading ? 'Adding..' : 'Add Room'}
           </button>
         </div>
       </form>
