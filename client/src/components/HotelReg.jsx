@@ -1,7 +1,11 @@
 import React from 'react'
 import { assets, cities } from '../assets/assets';
+import { useAppContext } from '../context/AppContext';
 
 const HotelReg = () => {
+
+    const { setShowHotelReg } = useAppContext();
+
     return (
         <div className="fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center min-h-screen bg-gray-50 py-10 px-4">
             <form className="flex flex-col md:flex-row bg-white rounded-2xl shadow-lg overflow-hidden w-full max-w-4xl relative">
@@ -15,7 +19,7 @@ const HotelReg = () => {
 
                 {/* Form Content */}
                 <div className="w-full md:w-1/2 p-8 flex flex-col justify-center relative">
-                    <img
+                    <img onClick={() => setShowHotelReg(false)}
                         src={assets.closeIcon}
                         alt="close-icon"
                         className="absolute top-4 right-4 h-6 w-6 cursor-pointer hover:scale-105 transition-transform"
